@@ -1,5 +1,6 @@
 <cspapp>/NPMLBI.js
 <cspapp>/polygonsUKR.js
+<cspapp>/polygonsUSA.js
 NPMLBI.Borders.CLS
 NPMLBI.Parameter.CLS
 NPMLBI.TestData.CLS
