@@ -1,0 +1,82 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Export generator="Cache" version="25">
+<Class name="USA.Region">
+<Description>
+State or county</Description>
+<Super>Area</Super>
+<TimeCreated>63187,27201.87784</TimeCreated>
+
+<Property name="Capital">
+<Description>
+Capital for state. seat - for county</Description>
+<Type>City</Type>
+<Parameter name="XMLREFERENCE" value="ID"/>
+</Property>
+
+<Property name="DefaultZoom">
+<Description>
+DefaultZoom</Description>
+<Type>%Integer</Type>
+</Property>
+
+<Property name="HLevel">
+<Description>
+Level in the hierarchy</Description>
+<Type>%Integer</Type>
+<Required>1</Required>
+</Property>
+
+<Property name="ParentRegion">
+<Description>
+Parent of region. For state=null, for county=state</Description>
+<Type>Region</Type>
+<Cardinality>one</Cardinality>
+<Inverse>ChildrenRegions</Inverse>
+<Relationship>1</Relationship>
+<Parameter name="XMLPROJECTION" value="XELEMENT"/>
+<Parameter name="XMLREFERENCE" value="ID"/>
+</Property>
+
+<Property name="ChildrenRegions">
+<Description>
+Region childrens. For state=counties, for county=0</Description>
+<Type>Region</Type>
+<Cardinality>many</Cardinality>
+<Inverse>ParentRegion</Inverse>
+<Relationship>1</Relationship>
+</Property>
+
+<Property name="Cities">
+<Description>
+Cities in county</Description>
+<Type>City</Type>
+<Cardinality>many</Cardinality>
+<Inverse>Region</Inverse>
+<Relationship>1</Relationship>
+</Property>
+
+<Index name="ParentRegionIdx">
+<Properties>ParentRegion</Properties>
+</Index>
+
+<Storage name="Default">
+<Type>%Library.CacheStorage</Type>
+<DefaultData>RegionDefaultData</DefaultData>
+<Data name="RegionDefaultData">
+<Subscript>"Region"</Subscript>
+<Value name="1">
+<Value>Capital</Value>
+</Value>
+<Value name="2">
+<Value>DefaultZoom</Value>
+</Value>
+<Value name="3">
+<Value>HLevel</Value>
+</Value>
+<Value name="4">
+<Value>ParentRegion</Value>
+</Value>
+</Data>
+</Storage>
+</Class>
+</Export>

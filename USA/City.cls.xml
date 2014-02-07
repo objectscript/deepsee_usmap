@@ -1,0 +1,59 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Export generator="Cache" version="25">
+<Class name="USA.City">
+<Super>Area</Super>
+<TimeCreated>63221,69691.070553</TimeCreated>
+
+<Property name="Region">
+<Description>
+County</Description>
+<Type>Region</Type>
+<Cardinality>one</Cardinality>
+<Inverse>Cities</Inverse>
+<Relationship>1</Relationship>
+<Parameter name="XMLPROJECTION" value="XELEMENT"/>
+<Parameter name="XMLREFERENCE" value="ID"/>
+</Property>
+
+<Property name="SpecialIcon">
+<Description>
+1 - capital of state or county, 0-ordinary city</Description>
+<Type>%Boolean</Type>
+<Required>1</Required>
+</Property>
+
+<Property name="Latitude">
+<Type>%Float</Type>
+<Required>1</Required>
+</Property>
+
+<Property name="Longitude">
+<Type>%Float</Type>
+<Required>1</Required>
+</Property>
+
+<Index name="RegionIdx">
+<Properties>Region</Properties>
+</Index>
+
+<Storage name="Default">
+<Type>%Library.CacheStorage</Type>
+<DefaultData>CityDefaultData</DefaultData>
+<Data name="CityDefaultData">
+<Subscript>"City"</Subscript>
+<Value name="1">
+<Value>Region</Value>
+</Value>
+<Value name="2">
+<Value>Latitude</Value>
+</Value>
+<Value name="3">
+<Value>Longitude</Value>
+</Value>
+<Value name="4">
+<Value>SpecialIcon</Value>
+</Value>
+</Data>
+</Storage>
+</Class>
+</Export>

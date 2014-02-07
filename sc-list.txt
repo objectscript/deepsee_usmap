@@ -7,4 +7,6 @@ NPMLBI.UkraineMap.CLS
 NPMLBI.UkraineMapKPI.CLS
 NPMLBI.UkraineMapPortlet.CLS
 NPMLBI.Utils.CLS
+RusMap.PRJ
+USA.PKG
 UkraineDashboards-UkraineDashboard.dashboard.DFI

@@ -1,0 +1,67 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Export generator="Cache" version="25">
+<Class name="USA.Area">
+<Description>
+Region, County, City</Description>
+<Super>%Persistent,%XML.Adaptor</Super>
+<TimeCreated>63221,69619.760837</TimeCreated>
+
+<Property name="Name">
+<Description>
+Name of state|county|city</Description>
+<Type>%String</Type>
+<Required>1</Required>
+<Parameter name="MAXLEN" value="500"/>
+</Property>
+
+<Property name="Guid">
+<Description>
+Guid for polygons in js file</Description>
+<Type>%String</Type>
+<Required>1</Required>
+</Property>
+
+<Property name="DataUrl">
+<Description>
+Link to Wiki article</Description>
+<Type>%String</Type>
+<Parameter name="MAXLEN" value="500"/>
+</Property>
+
+<Property name="Parameters">
+<Description>
+All values</Description>
+<Type>ParameterValue</Type>
+<Cardinality>many</Cardinality>
+<Inverse>Area</Inverse>
+<Relationship>1</Relationship>
+</Property>
+
+<Index name="GuidIdx">
+<IdKey>1</IdKey>
+<Properties>Guid</Properties>
+<Unique>1</Unique>
+</Index>
+
+<Storage name="Default">
+<Type>%Library.CacheStorage</Type>
+<DataLocation>^USA.AreaD</DataLocation>
+<DefaultData>AreaDefaultData</DefaultData>
+<IdLocation>^USA.AreaD</IdLocation>
+<IndexLocation>^USA.AreaI</IndexLocation>
+<StreamLocation>^USA.AreaS</StreamLocation>
+<ExtentSize>100000</ExtentSize>
+<Data name="AreaDefaultData">
+<Value name="1">
+<Value>%%CLASSNAME</Value>
+</Value>
+<Value name="2">
+<Value>Name</Value>
+</Value>
+<Value name="3">
+<Value>DataUrl</Value>
+</Value>
+</Data>
+</Storage>
+</Class>
+</Export>

@@ -1,0 +1,116 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Export generator="Cache" version="25">
+<Class name="USA.KPI.Top">
+<Description>
+USA.KPI.TreeChart</Description>
+<Super>%DeepSee.KPI</Super>
+<TimeCreated>63224,85363.873384</TimeCreated>
+
+<Parameter name="DOMAIN">
+</Parameter>
+
+<Parameter name="RESOURCE">
+</Parameter>
+
+<XData name="KPI">
+<Description>
+Этот блок XData содержит определение KPI</Description>
+<XMLNamespace>http://www.intersystems.com/deepsee/kpi</XMLNamespace>
+<Data><![CDATA[
+<kpi xmlns="http://www.intersystems.com/deepsee/kpi"
+ name="TopChart" sourceType="sql"
+ caption="TopChart"
+ sql="">
+ <property name="Name" columnNo="1"/>
+ <property name="Value" columnNo="2"/>
+ <filter name="ParentGuid"/>
+ <filter name="ParameterName"/> 
+ <filter name="TopNumber" displayList="10,20,30,40,50" valueList="10,20,30,40,50"/> 
+  
+</kpi>
+]]></Data>
+</XData>
+
+<Method name="%OnGetSQL">
+<Description>
+Return an SQL statement to execute.</Description>
+<FormalSpec><![CDATA[&pSQL:%String]]></FormalSpec>
+<ReturnType>%Status</ReturnType>
+<Implementation><![CDATA[
+	set st = $$$OK
+	try{
+		set parameterId = 1
+		if (..%filterValues.ParameterName '= ""){
+			set parameterId = ##class(USA.Parameter).GetIdByName(..%filterValues.ParameterName)
+		}
+		
+		
+		if (..%filterValues.ParentGuid = ""){
+			set pSQL = $replace(..GetStringFromXData("sqlUSARegion"), ":WHERECondition", "reg.HLevel=0 AND pv.Parameter='"_parameterId_"'")
+		}
+		else{
+			set area = ##class(USA.Area).GuidIdxOpen(..%filterValues.ParentGuid,,.sc)
+			if (area.HLevel=0){
+				set pSQL = $replace(..GetStringFromXData("sqlUSARegion"), ":WHERECondition", "reg.HLevel=1 AND reg.ParentRegion='"_area.Guid_"' AND pv.Parameter='"_parameterId_"'")
+			}
+			else{
+				set pSQL = $replace(..GetStringFromXData("sqlUSARegion"), ":WHERECondition", "reg.HLevel=1 AND reg.ParentRegion='"_area.ParentRegion.Guid_"' AND pv.Parameter='"_parameterId_"'")
+			}
+		}
+
+		if (..%filterValues.TopNumber '= ""){
+			set pSQL = $replace(pSQL, ":TopNumber", "Top "_..%filterValues.TopNumber)
+		}
+		else{
+			set pSQL = $replace(pSQL, ":TopNumber", "")	
+		}
+	}
+	catch(ex){
+		set st = ex.AsStatus()
+	}
+	
+	Quit $$$OK
+]]></Implementation>
+</Method>
+
+<XData name="sqlUSARegion">
+<Data><![CDATA[
+<xml><![CDATA[
+SELECT :TopNumber reg.Name, pv.Value
+FROM USA.Region as reg INNER JOIN
+USA.ParameterValue as pv ON pv.Area=reg.ID
+WHERE :WHERECondition
+ORDER BY pv.Value DESC
+]]]]><![CDATA[></xml>
+]]></Data>
+</XData>
+
+<Method name="GetStringFromXData">
+<Description>
+Извлечение SQL-запроса из блока XData с указанным именем</Description>
+<ClassMethod>1</ClassMethod>
+<FormalSpec>name:%String</FormalSpec>
+<ReturnType>%String</ReturnType>
+<Implementation><![CDATA[
+	#dim sc As %Status
+	#dim result As %String = ""
+	
+	#dim xdata As %Persistent = ##class(%Dictionary.CompiledXData).%OpenId(..%ClassName(1) _ "||" _ name,, .sc)
+	if $$$ISOK(sc) && $isObject(xdata)
+	{
+		#dim node As %XML.TextReader
+		set sc = ##class(%XML.TextReader).ParseStream(xdata.Data, .node)
+		if $$$ISOK(sc)
+		{
+			do node.MoveToContent()
+			while (node.NodeType '= "chars") && (node.NodeType '= "cdata") && node.Read() {}
+			
+			if (node.NodeType = "chars") || (node.NodeType = "cdata") set result = node.Value
+		}
+	}	
+	
+	quit result
+]]></Implementation>
+</Method>
+</Class>
+</Export>

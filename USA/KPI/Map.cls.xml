@@ -1,0 +1,215 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Export generator="Cache" version="25">
+<Class name="USA.KPI.Map">
+<Description>
+Source for Map widget</Description>
+<Super>%DeepSee.KPI</Super>
+<TimeCreated>63224,84591.060448</TimeCreated>
+
+<Parameter name="DOMAIN">
+</Parameter>
+
+<Parameter name="RESOURCE">
+</Parameter>
+
+<XData name="KPI">
+<Description>
+Этот блок XData содержит определение KPI</Description>
+<XMLNamespace>http://www.intersystems.com/deepsee/kpi</XMLNamespace>
+<Data><![CDATA[
+<kpi xmlns="http://www.intersystems.com/deepsee/kpi"
+ name="USAMapKPI" sourceType="sql"
+ caption="USAMapKPI"
+ sql="">
+
+<property name="Name" columnNo="1"/>
+<property name="Guid" columnNo="2"/>
+<property name="Level" columnNo="3"/>
+<property name="Latitude" columnNo="4"/>
+<property name="Longitude" columnNo="5"/>
+<property name="DefaultZoom" columnNo="6"/>
+<property name="CanDrillDown" columnNo="7"/>
+<property name="CenterName" columnNo="8"/>
+<property name="SpecialIcon" columnNo="9"/>
+<property name="DataUrl" columnNo="10"/>
+<property name="Value" columnNo="11"/>
+<property name="ParameterId" columnNo="12"/>
+
+<filter name="ParentGuid"/>
+<filter name="ParameterName" sql="SELECT Name FROM USA.Parameter" defaultValue="0"/>
+<filter name="PolygonsMarkers"  displayList="Polygons,Polygons and markers" valueList="Polygons,Polygons and markers" defaultValue="Polygons"/>
+
+</kpi>
+]]></Data>
+</XData>
+
+<Method name="%OnGetSQL">
+<Description>
+Return an SQL statement to execute.</Description>
+<FormalSpec><![CDATA[&pSQL:%String]]></FormalSpec>
+<ReturnType>%Status</ReturnType>
+<Implementation><![CDATA[
+	set st = $$$OK
+	
+	try{	
+		set parameterId = ##class(USA.Parameter).GetIdByName(..%filterValues.ParameterName)
+		
+		if (..%filterValues.ParentGuid = ""){
+			if (..%filterValues.PolygonsMarkers = "Polygons"){
+				// Show all states
+				set pSQL = $replace(..GetStringFromXData("sqlUSARegion"), ":WHERECondition", "reg.HLevel=0 AND pv.Parameter='"_parameterId_"'")	
+			}
+			else{
+				set pSQL = $replace(..GetStringFromXData("sqlUSAAll"), ":WHERERegionCondition", "reg.HLevel=0 AND pv.Parameter='"_parameterId_"'")	
+				set pSQL = $replace(pSQL, ":WHERECityCondition", "reg.HLevel=0 AND pv.Parameter='"_parameterId_"'")				
+			}
+		}
+		else{
+			if (..%filterValues.ParentGuid = "26703EE6-958A-4F8C-AF79-A9A5730AD2FE"){
+				set pSQL = $replace(..GetStringFromXData("sqlUSACity"), ":WHERECondition", "city.Region='3000B5D3-80AB-419F-AC64-0E268DF05DF3' AND pv.Parameter='"_parameterId_"'")
+				return $$$OK
+			}
+			
+			// Open state|county or city
+			set area = ##class(USA.Area).GuidIdxOpen(..%filterValues.ParentGuid)
+			
+			if ($CLASSNAME(area) = "USA.Region"){
+				if (area.HLevel = 0){
+					if (..%filterValues.PolygonsMarkers = "Polygons"){
+						// Show all counties in state
+						set pSQL = $replace(..GetStringFromXData("sqlUSARegion"), ":WHERECondition", "reg.HLevel=1 AND reg.ParentRegion='"_area.Guid_"' AND pv.Parameter='"_parameterId_"'")	
+					}
+					else{
+						// Show all counties and all cities
+						set pSQL = $replace(..GetStringFromXData("sqlUSAAll"), ":WHERERegionCondition", "reg.HLevel=1 AND reg.ParentRegion='"_area.Guid_"' AND pv.Parameter='"_parameterId_"'")	
+						set pSQL = $replace(pSQL, ":WHERECityCondition", "city.Region->ParentRegion='"_area.Guid_"' AND pv.Parameter='"_parameterId_"'")				
+					}
+				}
+				else{
+					// Show all cities in county
+					set pSQL = $replace(..GetStringFromXData("sqlUSACity"), ":WHERECondition", "city.Region='"_area.Guid_"' AND pv.Parameter='"_parameterId_"'")
+				}
+			}
+		}
+	
+	}
+	catch(ex){
+		set st = ex.AsStatus()
+	}
+	
+	Quit st
+]]></Implementation>
+</Method>
+
+<XData name="sqlUSARegion">
+<Data><![CDATA[
+<xml><![CDATA[
+SELECT reg.Name, 
+	   reg.Guid, 
+	   reg.HLevel As "Level",
+	   NULL As Latitude, 
+	   NULL As Longitude, 
+	   reg.DefaultZoom, 
+	   1 As CanDrillDown, 
+	   reg.Capital->Name As CenterName, 
+	   NULL As SpecialIcon, 
+	   reg.DataUrl As DataUrl, 
+	   pv.Value As Value, 
+	   pv.Parameter As ParameterId
+FROM USA.ParameterValue as pv INNER JOIN
+	 USA.Region as reg ON reg.ID = pv.Area
+WHERE :WHERECondition
+]]]]><![CDATA[></xml>
+]]></Data>
+</XData>
+
+<XData name="sqlUSACity">
+<Data><![CDATA[
+<xml><![CDATA[
+SELECT city.Name, 
+	   city.Guid, 
+	   '3' As "Level",
+	   city.Latitude, 
+	   city.Longitude, 
+	   NULL As DefaultZoom, 
+	   NULL As CanDrillDown, 
+	   '' As CenterName, 
+	   city.SpecialIcon As SpecialIcon, 
+	   city.DataUrl As DataUrl, 
+	   pv.Value As Value, 
+	   pv.Parameter As ParameterId
+FROM USA.ParameterValue as pv INNER JOIN
+	 USA.City as city ON city.ID = pv.Area
+WHERE :WHERECondition
+]]]]><![CDATA[></xml>
+]]></Data>
+</XData>
+
+<XData name="sqlUSAAll">
+<Data><![CDATA[
+<xml><![CDATA[
+SELECT reg.Name, 
+	   reg.Guid, 
+	   reg.HLevel As "Level",
+	   NULL As Latitude, 
+	   NULL As Longitude, 
+	   reg.DefaultZoom, 
+	   1 As CanDrillDown, 
+	   reg.Capital->Name As CenterName, 
+	   NULL As SpecialIcon, 
+	   reg.DataUrl As DataUrl, 
+	   pv.Value As Value, 
+	   pv.Parameter As ParameterId
+FROM USA.ParameterValue as pv INNER JOIN
+	 USA.Region as reg ON reg.ID = pv.Area
+WHERE :WHERERegionCondition
+UNION
+SELECT city.Name As Name, 
+	   city.Guid As Guid, 
+	   '3' As "Level",
+	   city.Latitude As Latitude, 
+	   city.Longitude As Longitude, 
+	   NULL As DefaultZoom, 
+	   NULL As CanDrillDown, 
+	   '*' As CenterName, 
+	   city.SpecialIcon As SpecialIcon, 
+	   city.DataUrl As DataUrl, 
+	   pv.Value As Value, 
+	   pv.Parameter As ParameterId
+FROM USA.City as city INNER JOIN
+USA.Region as reg ON reg.Capital=city.ID INNER JOIN
+USA.ParameterValue as pv ON pv.Area=city.ID
+WHERE :WHERECityCondition
+]]]]><![CDATA[></xml>
+]]></Data>
+</XData>
+
+<Method name="GetStringFromXData">
+<Description>
+Извлечение SQL-запроса из блока XData с указанным именем</Description>
+<ClassMethod>1</ClassMethod>
+<FormalSpec>name:%String</FormalSpec>
+<ReturnType>%String</ReturnType>
+<Implementation><![CDATA[
+	#dim sc As %Status
+	#dim result As %String = ""
+	
+	#dim xdata As %Persistent = ##class(%Dictionary.CompiledXData).%OpenId(..%ClassName(1) _ "||" _ name,, .sc)
+	if $$$ISOK(sc) && $isObject(xdata)
+	{
+		#dim node As %XML.TextReader
+		set sc = ##class(%XML.TextReader).ParseStream(xdata.Data, .node)
+		if $$$ISOK(sc)
+		{
+			do node.MoveToContent()
+			while (node.NodeType '= "chars") && (node.NodeType '= "cdata") && node.Read() {}
+			
+			if (node.NodeType = "chars") || (node.NodeType = "cdata") set result = node.Value
+		}
+	}	
+	
+	quit result
+]]></Implementation>
+</Method>
+</Class>
+</Export>

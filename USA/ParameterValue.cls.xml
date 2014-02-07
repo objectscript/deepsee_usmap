@@ -1,0 +1,64 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Export generator="Cache" version="25">
+<Class name="USA.ParameterValue">
+<Super>%Persistent,%XML.Adaptor</Super>
+<TimeCreated>63221,70223.897019</TimeCreated>
+
+<Property name="Area">
+<Description>
+State, county or city</Description>
+<Type>Area</Type>
+<Cardinality>one</Cardinality>
+<Inverse>Parameters</Inverse>
+<Relationship>1</Relationship>
+<Parameter name="XMLPROJECTION" value="XELEMENT"/>
+<Parameter name="XMLREFERENCE" value="ID"/>
+</Property>
+
+<Property name="Parameter">
+<Description>
+Parameter</Description>
+<Type>Parameter</Type>
+<Cardinality>one</Cardinality>
+<Inverse>Values</Inverse>
+<Relationship>1</Relationship>
+<Parameter name="XMLPROJECTION" value="XELEMENT"/>
+<Parameter name="XMLREFERENCE" value="ID"/>
+</Property>
+
+<Property name="Value">
+<Description>
+Value for region|county|city</Description>
+<Type>%Float</Type>
+<Required>1</Required>
+</Property>
+
+<Index name="PVIdx">
+<Properties>Area,Parameter</Properties>
+</Index>
+
+<Storage name="Default">
+<Type>%Library.CacheStorage</Type>
+<DataLocation>^USA.ParameterValueD</DataLocation>
+<DefaultData>ParameterValueDefaultData</DefaultData>
+<IdLocation>^USA.ParameterValueD</IdLocation>
+<IndexLocation>^USA.ParameterValueI</IndexLocation>
+<StreamLocation>^USA.ParameterValueS</StreamLocation>
+<ExtentSize>100000</ExtentSize>
+<Data name="ParameterValueDefaultData">
+<Value name="1">
+<Value>%%CLASSNAME</Value>
+</Value>
+<Value name="2">
+<Value>Area</Value>
+</Value>
+<Value name="3">
+<Value>Parameter</Value>
+</Value>
+<Value name="4">
+<Value>Value</Value>
+</Value>
+</Data>
+</Storage>
+</Class>
+</Export>

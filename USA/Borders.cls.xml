@@ -1,0 +1,150 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Export generator="Cache" version="25">
+<Class name="USA.Borders">
+<Description>
+Borders for polygons</Description>
+<Super>%Persistent</Super>
+<TimeCreated>63223,60526.79831</TimeCreated>
+
+<Property name="ParentRegion">
+<Description>
+ParentRegion guid or string-'NULL' if level=0</Description>
+<Type>%String</Type>
+<Required>1</Required>
+</Property>
+
+<Property name="Parameter">
+<Description>
+Parameter</Description>
+<Type>USA.Parameter</Type>
+<Required>1</Required>
+</Property>
+
+<Property name="HLevel">
+<Description>
+Level</Description>
+<Type>%Integer</Type>
+<Required>1</Required>
+</Property>
+
+<Property name="Minimum">
+<Type>%Integer</Type>
+</Property>
+
+<Property name="Maximum">
+<Type>%Integer</Type>
+</Property>
+
+<Index name="BordersIdx">
+<Properties>ParentRegion,Parameter,HLevel</Properties>
+<Unique>1</Unique>
+</Index>
+
+<Method name="GetBorders">
+<Description>
+Get a set of borders values for polygons whose parent GUID = parentRegionGuid</Description>
+<ClassMethod>1</ClassMethod>
+<FormalSpec>paramId:%String,hLevel:%Integer,parentRegionGuid:%String</FormalSpec>
+<ReturnType>%String</ReturnType>
+<Implementation><![CDATA[
+	set borderMax = 10000
+	set borderMin = 0
+	set unitName = "-"
+
+	if (parentRegionGuid="") set parentRegionGuid = "NULL"
+	
+	set border = ""
+	
+	try{
+		if (..BordersIdxExists(parentRegionGuid, paramId, hLevel) = 1){
+			set border = ..BordersIdxOpen(parentRegionGuid, paramId, hLevel)
+		}
+		else{
+			set minVal=0, maxVal=10000
+			
+			if (parentRegionGuid = "NULL"){
+				&sql(SELECT Min(Value), Max(Value) INTO :minVal,:maxVal
+					 FROM USA.Region as reg INNER JOIN
+					 USA.ParameterValue as pv ON reg.ID = pv.Area
+					 WHERE reg.HLevel=:hLevel AND pv.Parameter=:paramId )
+			}
+			else{
+				&sql(SELECT Min(Value), Max(Value) INTO :minVal,:maxVal
+					 FROM USA.Region as reg INNER JOIN
+					 USA.ParameterValue as pv ON reg.ID = pv.Area
+					 WHERE reg.HLevel=:hLevel AND pv.Parameter=:paramId AND reg.ParentRegion=:parentRegionGuid)
+			}
+			 
+			set border = ..%New()
+			set border.ParentRegion = parentRegionGuid
+			set border.Parameter = ##class(USA.Parameter).%OpenId(paramId)
+			set border.HLevel = hLevel
+			set border.Maximum = maxVal
+			set border.Minimum = minVal
+			do border.%Save()
+		}
+		
+		set borderMin = border.Minimum
+		set borderMax = border.Maximum
+		set unitName = border.Parameter.UnitName
+	}
+	catch 
+	{}
+		
+	quit borderMin_";"_borderMax_";"_unitName
+]]></Implementation>
+</Method>
+
+<Method name="SetBorders">
+<Description>
+Update values for border</Description>
+<ClassMethod>1</ClassMethod>
+<FormalSpec>paramId:%String,level:%Integer,parentRegionGuid:%String,min:%Integer,max:%Integer</FormalSpec>
+<ReturnType>%Status</ReturnType>
+<Implementation><![CDATA[
+	set st = $$$OK
+	try{
+		if (parentRegionGuid="") set parentRegionGuid = "NULL"
+		set brd = ..BordersIdxOpen(parentRegionGuid, paramId, level)
+		set brd.Maximum = max
+		set brd.Minimum = min
+		set st = brd.%Save()
+	}
+	catch(ex){
+		set st = ex.AsStatus()
+	}
+	quit st
+]]></Implementation>
+</Method>
+
+<Storage name="Default">
+<Type>%Library.CacheStorage</Type>
+<DataLocation>^USA.BordersD</DataLocation>
+<DefaultData>BordersDefaultData</DefaultData>
+<IdLocation>^USA.BordersD</IdLocation>
+<IndexLocation>^USA.BordersI</IndexLocation>
+<StreamLocation>^USA.BordersS</StreamLocation>
+<ExtentSize>100000</ExtentSize>
+<Data name="BordersDefaultData">
+<Value name="1">
+<Value>%%CLASSNAME</Value>
+</Value>
+<Value name="2">
+<Value>ParentRegion</Value>
+</Value>
+<Value name="3">
+<Value>Parameter</Value>
+</Value>
+<Value name="4">
+<Value>HLevel</Value>
+</Value>
+<Value name="5">
+<Value>Minimum</Value>
+</Value>
+<Value name="6">
+<Value>Maximum</Value>
+</Value>
+</Data>
+</Storage>
+</Class>
+</Export>

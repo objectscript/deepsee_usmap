@@ -1,0 +1,55 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Export generator="Cache" version="25">
+<Class name="USA.Parameter">
+<Super>%Persistent,%XML.Adaptor</Super>
+<TimeCreated>63221,70183.07846</TimeCreated>
+
+<Property name="Name">
+<Type>%String</Type>
+<Required>1</Required>
+</Property>
+
+<Property name="UnitName">
+<Type>%String</Type>
+</Property>
+
+<Property name="Values">
+<Type>ParameterValue</Type>
+<Cardinality>many</Cardinality>
+<Inverse>Parameter</Inverse>
+<Relationship>1</Relationship>
+</Property>
+
+<Method name="GetIdByName">
+<ClassMethod>1</ClassMethod>
+<FormalSpec>name:%String</FormalSpec>
+<ReturnType>%String</ReturnType>
+<Implementation><![CDATA[
+	set id=0
+	&sql(SELECT ID INTO :id FROM USA.Parameter WHERE Name = :name)
+	quit id
+]]></Implementation>
+</Method>
+
+<Storage name="Default">
+<Type>%Library.CacheStorage</Type>
+<DataLocation>^USA.ParameterD</DataLocation>
+<DefaultData>ParameterDefaultData</DefaultData>
+<IdLocation>^USA.ParameterD</IdLocation>
+<IndexLocation>^USA.ParameterI</IndexLocation>
+<StreamLocation>^USA.ParameterS</StreamLocation>
+<ExtentSize>100000</ExtentSize>
+<Data name="ParameterDefaultData">
+<Value name="1">
+<Value>%%CLASSNAME</Value>
+</Value>
+<Value name="2">
+<Value>Name</Value>
+</Value>
+<Value name="3">
+<Value>UnitName</Value>
+</Value>
+</Data>
+</Storage>
+</Class>
+</Export>
