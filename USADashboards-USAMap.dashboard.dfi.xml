@@ -1,0 +1,130 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Export generator="Cache" version="25">
+<Document name="USADashboards-USAMap.dashboard.DFI">
+<dashboard xmlns="http://www.intersystems.com/deepsee/library" name="USAMap" folderName="USADashboards" title="" description="" keywords="" owner="" shared="true" public="true" locked="false" resource="" timeCreated="2013-07-04T05:29:56.446Z" createdBy="ilson" category="" bookCover="" scheme="" worklistCount="0" snapTo="true" snapGrid="true" gridRows="10" gridCols="10" canResize="true" canModify="true" showTitleBar="true" companyName="" companyLogo="" companyStyle="">
+  <widget name="MapW" type="portlet" subtype="USA.MapPortlet" subtypeClass="" title="USA map" dataSource="USAMapKPI.kpi" dataLink="" drillDownDataSource="" width="200" height="200" sidebarContent="" showSidebar="false" sidebarWidth="" maximized="false" homeRowL="0" homeColL="0" colSpanL="7" rowSpanL="10" showToolbar="true" theme="" dataColorList="">
+    <control name="" action="applyFilter" target="*" targetProperty="ParentGuid" location="widget" type="hidden" controlClass="" label="ParentGuid" title="" value="" text="" readOnly="false" valueList="" displayList="" activeWhen=""></control>
+    <control name="" action="applyFilter" target="*" targetProperty="ParameterName" location="widget" type="dropdown" controlClass="" label="Parameter" title="" value="Population" text="" readOnly="false" valueList="" displayList="" activeWhen=""></control>
+    <control name="" action="applyFilter" target="" targetProperty="PolygonsMarkers" location="widget" type="dropdown" controlClass="" label="Type of view" title="" value="Polygons" text="" readOnly="false" valueList="" displayList="Polygons,Polygons and markers" activeWhen=""></control>
+    <property name="colorProperty"></property>
+    <property name="coordsJsFile">polygonsUSA.js</property>
+    <property name="coordsProperty">Guid</property>
+    <property name="fillOpacity">0.6</property>
+    <property name="hoverOpacity">0.4</property>
+    <property name="latitude">41</property>
+    <property name="latitudeProperty">Latitude</property>
+    <property name="longitude">-102</property>
+    <property name="longitudeProperty">Longitude</property>
+    <property name="markerDataProperties">Name,Guid,DefaultZoom,CanDrillDown,DataUrl,Value,ParameterId,Level,CenterName,SpecialIcon</property>
+    <property name="markerIcon">http://i.imgur.com/pBB7MYT.png</property>
+    <property name="markerSpecialIcon">http://i.imgur.com/bFJRQfv.png</property>
+    <property name="markerSpecialProperty">SpecialIcon</property>
+    <property name="markerTitleProperty">Name</property>
+    <property name="onclickmarker"><![CDATA[
+    	if (marker.data.CanDrillDown == 1) 
+   		{ 
+   			for (var n = 0; n < zenThis._polygons.length; n++) 
+			{
+				var poly = zenThis._polygons[n];
+				if (poly.data.Guid == marker.data.Guid)
+				{
+					zenInvokeCallbackMethod(zenThis.onclickpolygon,zenThis,'onclickpolygon','polygon',poly,'position', marker.position);
+				}
+			} 
+   		} 
+   		else 
+   		{ 
+			zenInvokeCallbackMethod(zenThis.onrightclickpolygon,zenThis,'onrightclickpolygon','polygon', {data: marker.data},'position', marker.position);
+		}
+    ]]></property>
+    <property name="onclickpolygon"><![CDATA[    	
+    if(!zenThis.lastPolygon)     		
+        zenThis.lastPolygon=[];    	 				  		
+     
+     zenThis.drillDown(polygon.data.Name, position, polygon.data.DefaultZoom, {Guid: polygon.data.Guid, Level: polygon.data.Level});   		  		
+     
+     if (zenThis.lastPolygon.length > 0)
+     {
+		 zenThis.lastPolygon[zenThis.lastPolygon.length - 1].setVisible(false);
+     }
+      		    	
+     zenThis.currPolygon = new google.maps.Polygon({zIndex: 99, fillOpacity: 0.01, strokeColor: 'rgb(0,0,0)', strokeOpacity: ((polygon.data.Level==0 && polygon.data.Name != 'District of Columbia') ? 0:0.4), paths: polygon.getPaths(), clickable: false, map: zenThis.getMapObject()});    	
+     zenThis.lastPolygon.push(zenThis.currPolygon);    
+    ]]></property>
+    <property name="ondrilldown">
+   		if(!zenThis.lastGuid)
+   		{ 
+    		zenThis.lastGuid = [];
+    		zenThis.lastLevel = [];
+    		zenThis.currGuid = '';
+    		zenThis.currName = '';
+    		zenThis.currLevel = '';
+   		}
+   		
+   		zenThis.lastLevel.push(zenThis.currLevel);  
+   		zenThis.lastGuid.push(zenThis.currGuid);
+   		
+   		zenThis.currLevel = data.Level;
+   		zenThis.currGuid = data.Guid;
+   		
+   		zenThis._sliderRangeData.currGuid = data.Guid;
+   		zenPage.dashboardEventHandler(zenThis,'click', zenThis.currGuid, 'applyFilter', '*', 'ParentGuid');  		 
+   	</property>
+    <property name="ondrillup"><![CDATA[	
+    	if (zenThis.lastGuid)  
+		{  
+			zenThis.currGuid = zenThis.lastGuid.pop();
+			zenThis.currLevel = zenThis.lastLevel.pop();
+  			zenThis.currPolygon = zenThis.lastPolygon.pop();
+  			
+			zenThis._sliderRangeData.currGuid = zenThis.currGuid;
+			zenPage.dashboardEventHandler(zenThis,'click', zenThis.currGuid, 'applyFilter', '*', 'ParentGuid');          
+	
+	  		if (zenThis.lastPolygon.length > 0)
+            {
+		        zenThis.lastPolygon[zenThis.lastPolygon.length - 1].setVisible(true);
+            }
+            
+			if (zenThis.currPolygon)          
+				zenThis.currPolygon.setMap(null);
+		}
+	]]></property>
+    <property name="onrightclickmarker">
+     zenInvokeCallbackMethod(zenThis.onrightclickpolygon,zenThis,'onrightclickpolygon','polygon', {data: marker.data},'position', marker.position);
+    </property>
+    <property name="onrightclickpolygon"><![CDATA[ 
+  		var wiki='';
+  		
+  		if (polygon.data.DataUrl){ 
+    		var wikiUrl = 'http://en.wikipedia.org/wiki/' + polygon.data.DataUrl;
+    		wiki = "  <a style='cursor: pointer; float:right; padding-right: 4px; text-decoration: none; color:blue;' title='Link to Wikipedia article' onclick='window.open(\""+wikiUrl+"\",\"_blank\")'>Wiki</a>";  
+  		}
+  		
+  		var content = '<div style="font-size: 12px; font-family:arial;"><b>' + polygon.data.Name + '</b>'+wiki+'<br>';    
+    	if(polygon.data.Level==0 || polygon.data.Level==1){
+    		var centerCaption = polygon.data.Level==0 ? '<br>Capital: ' : '<br>Seat: ';
+    		content += polygon.data.CenterName ? (centerCaption + polygon.data.CenterName + '<br>') : '';    		
+    	}
+    	
+    	content += zenThis.beatNumber(zenThis.GetParametersDataForInfoWindow(polygon.data.Guid)) + '</div>';	      
+    	zenThis.openInfoWindowAtPosition(position, content);
+    ]]></property>
+    <property name="polygonDataProperties">Name,Guid,DefaultZoom,CanDrillDown,Value,DataUrl,ParameterId,Level,CenterName</property>
+    <property name="polygonTitleProperty">Name</property>
+    <property name="strokeOpacity">1</property>
+    <property name="strokeWeight">1</property>
+    <property name="zoom">4</property>
+  </widget>
+  <widget name="TopW" type="pivot" subtype="barChart" subtypeClass="barChart" title="Top states / counties by parameter" dataSource="TopChart.kpi" dataLink="" drillDownDataSource="" width="200" height="200" sidebarContent="" showSidebar="false" sidebarWidth="" maximized="false" homeRowL="0" homeColL="7" colSpanL="3" rowSpanL="10" showToolbar="true" theme="" dataColorList="">
+    <control name="" action="applyFilter" target="" targetProperty="ParentGuid" location="widget" type="hidden" controlClass="" label="ParentGuid" title="" value="" text="" readOnly="false" valueList="" displayList="" activeWhen=""></control>
+    <control name="" action="applyFilter" target="" targetProperty="ParameterName" location="widget" type="hidden" controlClass="" label="ParameterName" title="" value="" text="" readOnly="false" valueList="" displayList="" activeWhen=""></control>
+    <control name="" action="applyFilter" target="" targetProperty="TopNumber" location="widget" type="dropdown" controlClass="" label="Top" title="" value="20" text="" readOnly="false" valueList="" displayList="" activeWhen=""></control>
+    <dataProperty name="" label="" width="" align="" subtype="" style="" display="" format="" showAs="" valueColumn="false" summary="" summaryValue="" dataValue="Value" targetValue="" thresholdLower="" thresholdUpper="" rangeLower="" rangeUpper="" baseValue="" override=""></dataProperty>
+    <property name="chartToggle">chart</property>
+    <property name="legendPos">none</property>
+    <override name="barChart">{borderOffset:5,borderRadius:0,legendVisible:'false',maxLabelLen:20,plotStyle:'stroke-width:0;stroke:rgb(107,163,161);fill:rgb(123,161,161);',seriesColorScheme:'pastel',stripeStyle:'stroke-width:0;fill:transparent;',xAxis:{_type:'axis'},yAxisList:[{labelPosition:'left',_type:'axis'}],chartPivot:true,_type:'barChart'}</override>
+    <override name="legend">{hidden:true,legendLabels:'Name,Value',legendPosition:'right',_type:'chartLegend'}</override>
+    <override name="pivot">{cellWidth:'220',columnList:'Value',crossJoinRowLimit:2000,currListingPage:1,currPage:1,kpi:'USA.KPI.Top',listingFields:[],listingSelect:'multi',pivotVariables:{},showRowCaption:false,_type:'pivotTable'}</override>
+  </widget>
+</dashboard>
+</Document></Export>
