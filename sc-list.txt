@@ -10,4 +10,5 @@ NPMLBI.UkraineMapPortlet.CLS
 NPMLBI.Utils.CLS
 RusMap.PRJ
 USA.PKG
+USADashboards-USAMap.dashboard.DFI
 UkraineDashboards-UkraineDashboard.dashboard.DFI
